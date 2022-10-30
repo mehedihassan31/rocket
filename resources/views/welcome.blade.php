@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" >
     <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css"  >
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.4.0/css/select.bootstrap.min.css"  >
 
     <title>spacecats.tech</title>
 </head>
@@ -20,44 +21,58 @@
                       <label >Enter Launch Time</label>
                       <input type="datetime-local" id="launchtime" name="launchtime">
                     </div>
-                    <button type="button" class="btn btn-primary">Submit</button>
+                    <button type="button" id="submit" class="btn btn-primary">Submit</button>
                   </form>
             </div>
-          </div>
+            <div class="container">
+      <div class="card m-2" id="details" hidden>
+        <div class="m-2">
+          
+      Rocket A  Est. time of coming back: <input id="rocketa" type="text"  class="form-control mb-3" readonly ><br>
+      Rocket B  Est. time of coming back: <input id="rocketb" type="text"  class="form-control mb-3" readonly><br>
+      Rocket C  Est. time of coming back: <input id="rocketc" type="text"  class="form-control mb-3" readonly>
 
+        </div>
+
+        
+      </div>
+
+
+    </div>
+          </div>
           <div class="col-md-8">
-            <table class="table table-dark">
+            <table id="LaunchDatatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
               <thead>
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Rocket</th>
-                  <th scope="col">Launch Time</th>
-                  <th scope="col">Est. time of coming back</th>
+                  <th >Sl</th>
+                  <th >Rocket</th>
+                  <th >Launch Time</th>
+                  <th >Est. time of coming back</th>
                 </tr>
               </thead>
-
               <tbody id="launch_table">
 
               </tbody>
             </table>
           </div>
+
         </div>
 
-      </div>
+    </div>
 
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.1.min.js" ></script>
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js" ></script>
+<script src="https://cdn.datatables.net/select/1.4.0/js/dataTables.select.min.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" ></script>
+
+
+
 <script>
-
-$(document).ready( function () {
-    $('#launch_table').DataTable();
-} );
-
-
 
 getLaunchData();
 
@@ -66,20 +81,23 @@ axios.get('/getLaunchData')
 .then(function (response){
   if(response.status==200)
   {
-    $('#serviceDatatable').DataTable().destroy();
-    $('#servicetable').empty();
+    $('#LaunchDatatable').DataTable().destroy();
+    $('#launch_table').empty();
     var jsonData=response.data;
-    $.each(jsonData,function(i,item){
+    $.each(jsonData,function(i){
     $('<tr>').html(
-    "<td>"+jsonData[i].diamond+ "</td>"+
-    "<td>"+jsonData[i].price+"</td>"+
-    "<td>"+jsonData[i].sale_price+"</td>"
-     ).appendTo('#servicetable');
+    "<td>"+ jsonData[i].id +"</td>"+
+    "<td>"+ jsonData[i].roket_no +"</td>"+
+    "<td>"+ jsonData[i].launch_time +"</td>"+
+    "<td>"+ jsonData[i].come_back_time +"</td>"
+     ).appendTo('#launch_table');
     });
+    
+
+$('#launch_table').DataTable();
+// $('.dataTables_length').addClass('bs-select');
 
 
-$('#serviceDatatable').DataTable({"order":false});
-$('.dataTables_length').addClass('bs-select');
   }else{
 
   }
@@ -91,9 +109,38 @@ $('.dataTables_length').addClass('bs-select');
 
 
 
+$('#submit').click(function(){
+  var luanchtime=$('#launchtime').val();
+  getLuanchTime(luanchtime);
+});
 
 
+function getLuanchTime(luanchtime){
+      if(luanchtime.length==0){
+        alert("launch time is empty");  
+      }else{ 
+        // alert(launchtime);
+        axios.post('/launchtime',{ 
+          luanchtime:luanchtime,
 
+                      })
+                      .then(function(response){
+                        if(response.status==200)
+                        {
+                          $('#details').removeAttr('hidden');
+                          $('#rocketa').val(response.data.rocketA);
+                          $('#rocketb').val(response.data.rocketB);
+                          $('#rocketc').val(response.data.rocketC);
+
+                          getLaunchData();
+                        }else{
+                          getLaunchData();
+                        }
+                      }).catch(function (error) {
+                    
+                    });
+        }
+}
 
 </script>
 

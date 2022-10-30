@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\LaunchLog;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -9,14 +10,14 @@ class LaunchTimeController extends Controller
 {
     function getData(){
 
-        $current = Carbon::now();
+        LaunchLog::all();
 
-        return  $current;
+        return  LaunchLog::all();
 
     }
-    function estTimeCalc(){
+    function estTimeCalc(Request $request){
 
-        $current = Carbon::now();
+        // return $lunchtime= Carbon::parse($request->luanchtime);
 
         $rocketA=[
             'va'=> 2.77*1000,
@@ -46,16 +47,32 @@ class LaunchTimeController extends Controller
 
         foreach($rocket as $key=>$data){
             $m=60;
+            $h=60*60;
             $t1=(2*$data['va'])/$data['a'];
             $t2=$data['s']/$data['vs'];
+            $to=$t1+$t2;
 
-            $t[$key]=Carbon::now()->addHours(6)->addMinute(($t1+$t2)/$m)->format('d/m/Y H:i:s');
+            if($to>=60){
+                $t=Carbon::parse($request->luanchtime)->addHours(6)->addMinutes(($t1+$t2)/$m)->addSeconds(($t1+$t2)%$m);
+                $res[$key]=$t->format('d/m/Y H:i:s');
+            }elseif($to<60){
+                $t=Carbon::parse($request->luanchtime)->addHours(6)->addSeconds($t1+$t2);
+                $res[$key]=$t->format('d/m/Y H:i:s');
+            }else{
+                $t=Carbon::parse($request->luanchtime)->addHours(6)->addSeconds(($t1+$t2)/$h)->addMinutes(($t1+$t2)%$h);
+                $res[$key]=$t->format('d/m/Y H:i:s');
+                
+            }
+
+            $addInDB=LaunchLog::create([
+                'roket_no'=>$key,
+                'launch_time'=>$request->luanchtime,
+                'come_back_time'=>$t,
+            ]);
 
         }
 
-        return $t;
-
-
+        return $res;
 
     }
 }
